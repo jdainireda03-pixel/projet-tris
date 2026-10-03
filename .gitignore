@@ -1,0 +1,4 @@
+bin/
+build/
+resultats/*
+!resultats/*csv
