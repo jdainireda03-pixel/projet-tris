@@ -1,4 +1,5 @@
 /*
+Realisé par Mahmoud RABBANI
  * tri.c - Implementation des algorithmes de tri.
  *
  * Algorithmes : selection, insertion, bulles, fusion, rapide.
