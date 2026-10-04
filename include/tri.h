@@ -1,4 +1,5 @@
 /*
+Realisé par Mahmoud RABBANI
  * tri.h - Module de tri : algorithmes, compteurs et table des algorithmes.
  *
  * Tous les tris ont la meme signature : void tri_xxx(int *t, size_t n);
