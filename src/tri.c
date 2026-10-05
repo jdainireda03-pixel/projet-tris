@@ -1,21 +1,21 @@
 /*
-Realisé par Mahmoud RABBANI
  * tri.c - Implementation des algorithmes de tri.
  *
- * Algorithmes : selection, insertion, bulles, fusion, rapide.
+ * Algorithmes : selection, insertion, bulles, fusion, rapide, tas.
  * Chaque comparaison est precedee de INC_CMP(), chaque echange ou
  * deplacement d'element est accompagne de INC_ECH() (voir tri.h).
  */
 #include "tri.h"
 
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 /* ------------------------------------------------------------------ */
 /* Constantes                                                          */
 /* ------------------------------------------------------------------ */
-#define N_MAX_QUADRATIQUE 32000UL   /* tailles max des tris en O(n^2)   */
-#define N_MAX_LINEARITHM  1024000UL /* tailles max des tris en O(n log n) */
+#define N_MAX_QUADRATIQUE 32000UL  /* tailles max des tris en O(n^2)   */
+#define N_MAX_LINEARITHM 1024000UL /* tailles max des tris en O(n log n) */
 
 /* ------------------------------------------------------------------ */
 /* Compteurs (definis seulement si -DCOMPTAGE)                         */
@@ -32,12 +32,11 @@ unsigned long long g_echanges = 0;
 /*
  * echanger : echange les valeurs pointees par a et b (compte 1 echange).
  */
-static inline void echanger(int *a, int *b)
-{
-    int tmp = *a;
-    *a = *b;
-    *b = tmp;
-    INC_ECH();
+static inline void echanger(int *a, int *b) {
+  int tmp = *a;
+  *a = *b;
+  *b = tmp;
+  INC_ECH();
 }
 
 /* ------------------------------------------------------------------ */
@@ -49,25 +48,24 @@ static inline void echanger(int *a, int *b)
  * Parametres : t le tableau, n sa taille.
  * Invariant : apres i tours, t[0..i-1] contient les i plus petits
  *             elements, tries.
- * Fait exactement n(n-1)/2 comparisons et au plus n-1 echanges.
+ * Fait exactement n(n-1)/2 comparaisons et au plus n-1 echanges.
  */
-void tri_selection(int *t, size_t n)
-{
-    if (n < 2) {
-        return;
+void tri_selection(int *t, size_t n) {
+  if (n < 2) {
+    return;
+  }
+  for (size_t i = 0; i + 1 < n; i++) {
+    size_t min = i;
+    for (size_t j = i + 1; j < n; j++) {
+      INC_CMP();
+      if (t[j] < t[min]) {
+        min = j;
+      }
     }
-    for (size_t i = 0; i + 1 < n; i++) {
-        size_t min = i;
-        for (size_t j = i + 1; j < n; j++) {
-            INC_CMP();
-            if (t[j] < t[min]) {
-                min = j;
-            }
-        }
-        if (min != i) {
-            echanger(&t[i], &t[min]);
-        }
+    if (min != i) {
+      echanger(&t[i], &t[min]);
     }
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -83,25 +81,24 @@ void tri_selection(int *t, size_t n)
  * (1 deplacement chacun), puis on place x (1 deplacement s'il a bouge).
  * Tableau trie : n-1 comparaisons. Tableau inverse : n(n-1)/2.
  */
-void tri_insertion(int *t, size_t n)
-{
-    for (size_t i = 1; i < n; i++) {
-        int x = t[i];
-        size_t j = i;
-        while (j > 0) {
-            INC_CMP();
-            if (t[j - 1] <= x) {
-                break;
-            }
-            t[j] = t[j - 1];
-            INC_ECH();
-            j--;
-        }
-        if (j != i) {
-            t[j] = x;
-            INC_ECH();
-        }
+void tri_insertion(int *t, size_t n) {
+  for (size_t i = 1; i < n; i++) {
+    int x = t[i];
+    size_t j = i;
+    while (j > 0) {
+      INC_CMP();
+      if (t[j - 1] <= x) {
+        break;
+      }
+      t[j] = t[j - 1];
+      INC_ECH();
+      j--;
     }
+    if (j != i) {
+      t[j] = x;
+      INC_ECH();
+    }
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -116,24 +113,23 @@ void tri_insertion(int *t, size_t n)
  * Arret anticipe : si une passe ne fait aucun echange, le tableau est
  * trie (n-1 comparaisons sur un tableau deja trie).
  */
-void tri_bulles(int *t, size_t n)
-{
-    if (n < 2) {
-        return;
+void tri_bulles(int *t, size_t n) {
+  if (n < 2) {
+    return;
+  }
+  size_t fin = n; /* t[fin..n-1] est deja a sa place */
+  int echange;
+  do {
+    echange = 0;
+    for (size_t j = 1; j < fin; j++) {
+      INC_CMP();
+      if (t[j - 1] > t[j]) {
+        echanger(&t[j - 1], &t[j]);
+        echange = 1;
+      }
     }
-    size_t fin = n;     /* t[fin..n-1] est deja a sa place */
-    int echange;
-    do {
-        echange = 0;
-        for (size_t j = 1; j < fin; j++) {
-            INC_CMP();
-            if (t[j - 1] > t[j]) {
-                echanger(&t[j - 1], &t[j]);
-                echange = 1;
-            }
-        }
-        fin--;
-    } while (echange && fin > 1);
+    fin--;
+  } while (echange && fin > 1);
 }
 
 /* ------------------------------------------------------------------ */
@@ -146,49 +142,49 @@ void tri_bulles(int *t, size_t n)
  * Stable : en cas d'egalite, on prend l'element de gauche.
  * Invariant : les elements deja ecrits dans tmp sont les plus petits
  *             des deux moities, dans l'ordre.
+ * Le recopie final dans t compte aussi des deplacements.
  */
-static void fusionner(int *t, int *tmp, size_t debut, size_t milieu, size_t fin)
-{
-    size_t i = debut;
-    size_t j = milieu;
-    size_t k = debut;
+static void fusionner(int *t, int *tmp, size_t debut, size_t milieu,
+                      size_t fin) {
+  size_t i = debut;
+  size_t j = milieu;
+  size_t k = debut;
 
-    while (i < milieu && j < fin) {
-        INC_CMP();
-        if (t[i] <= t[j]) {
-            tmp[k++] = t[i++];
-        } else {
-            tmp[k++] = t[j++];
-        }
-        INC_ECH();
+  while (i < milieu && j < fin) {
+    INC_CMP();
+    if (t[i] <= t[j]) {
+      tmp[k++] = t[i++];
+    } else {
+      tmp[k++] = t[j++];
     }
-    while (i < milieu) {
-        tmp[k++] = t[i++];
-        INC_ECH();
-    }
-    while (j < fin) {
-        tmp[k++] = t[j++];
-        INC_ECH();
-    }
-    for (k = debut; k < fin; k++) {
-        t[k] = tmp[k];
-        INC_ECH();
-    }
+    INC_ECH();
+  }
+  while (i < milieu) {
+    tmp[k++] = t[i++];
+    INC_ECH();
+  }
+  while (j < fin) {
+    tmp[k++] = t[j++];
+    INC_ECH();
+  }
+  for (k = debut; k < fin; k++) {
+    t[k] = tmp[k];
+    INC_ECH();
+  }
 }
 
 /*
  * fusion_rec : tri fusion recursif (descendant) de t[debut..fin-1].
  * Le tampon tmp est fourni par l'appelant (alloue une seule fois).
  */
-static void fusion_rec(int *t, int *tmp, size_t debut, size_t fin)
-{
-    if (fin - debut < 2) {
-        return;
-    }
-    size_t milieu = debut + (fin - debut) / 2;
-    fusion_rec(t, tmp, debut, milieu);
-    fusion_rec(t, tmp, milieu, fin);
-    fusionner(t, tmp, debut, milieu, fin);
+static void fusion_rec(int *t, int *tmp, size_t debut, size_t fin) {
+  if (fin - debut < 2) {
+    return;
+  }
+  size_t milieu = debut + (fin - debut) / 2;
+  fusion_rec(t, tmp, debut, milieu);
+  fusion_rec(t, tmp, milieu, fin);
+  fusionner(t, tmp, debut, milieu, fin);
 }
 
 /*
@@ -197,18 +193,17 @@ static void fusion_rec(int *t, int *tmp, size_t debut, size_t fin)
  * Parametres : t le tableau, n sa taille.
  * En cas d'echec de malloc, le programme s'arrete avec un message.
  */
-void tri_fusion(int *t, size_t n)
-{
-    if (n < 2) {
-        return;
-    }
-    int *tmp = malloc(n * sizeof *tmp);
-    if (tmp == NULL) {
-        perror("tri_fusion: malloc");
-        exit(EXIT_FAILURE);
-    }
-    fusion_rec(t, tmp, 0, n);
-    free(tmp);
+void tri_fusion(int *t, size_t n) {
+  if (n < 2) {
+    return;
+  }
+  int *tmp = malloc(n * sizeof *tmp);
+  if (tmp == NULL) {
+    perror("tri_fusion: malloc");
+    exit(EXIT_FAILURE);
+  }
+  fusion_rec(t, tmp, 0, n);
+  free(tmp);
 }
 
 /* ------------------------------------------------------------------ */
@@ -225,41 +220,40 @@ void tri_fusion(int *t, size_t n)
  * Les elements egaux au pivot arretent les deux balayages : les
  * tableaux a doublons restent bien partages en deux.
  */
-static ptrdiff_t partition_hoare(int *t, ptrdiff_t lo, ptrdiff_t hi)
-{
-    ptrdiff_t mid = lo + (hi - lo) / 2;
+static ptrdiff_t partition_hoare(int *t, ptrdiff_t lo, ptrdiff_t hi) {
+  ptrdiff_t mid = lo + (hi - lo) / 2;
 
-    /* Mediane de trois : on ordonne t[lo] <= t[mid] <= t[hi]. */
-    INC_CMP();
-    if (t[mid] < t[lo]) {
-        echanger(&t[lo], &t[mid]);
-    }
-    INC_CMP();
-    if (t[hi] < t[lo]) {
-        echanger(&t[lo], &t[hi]);
-    }
-    INC_CMP();
-    if (t[hi] < t[mid]) {
-        echanger(&t[mid], &t[hi]);
-    }
-    int pivot = t[mid];
+  /* Mediane de trois : on ordonne t[lo] <= t[mid] <= t[hi]. */
+  INC_CMP();
+  if (t[mid] < t[lo]) {
+    echanger(&t[lo], &t[mid]);
+  }
+  INC_CMP();
+  if (t[hi] < t[lo]) {
+    echanger(&t[lo], &t[hi]);
+  }
+  INC_CMP();
+  if (t[hi] < t[mid]) {
+    echanger(&t[mid], &t[hi]);
+  }
+  int pivot = t[mid];
 
-    ptrdiff_t i = lo - 1;
-    ptrdiff_t j = hi + 1;
-    for (;;) {
-        do {
-            i++;
-            INC_CMP();
-        } while (t[i] < pivot);
-        do {
-            j--;
-            INC_CMP();
-        } while (t[j] > pivot);
-        if (i >= j) {
-            return j;
-        }
-        echanger(&t[i], &t[j]);
+  ptrdiff_t i = lo - 1;
+  ptrdiff_t j = hi + 1;
+  for (;;) {
+    do {
+      i++;
+      INC_CMP();
+    } while (t[i] < pivot);
+    do {
+      j--;
+      INC_CMP();
+    } while (t[j] > pivot);
+    if (i >= j) {
+      return j;
     }
+    echanger(&t[i], &t[j]);
+  }
 }
 
 /*
@@ -269,30 +263,75 @@ static ptrdiff_t partition_hoare(int *t, ptrdiff_t lo, ptrdiff_t hi)
  * Invariant : apres la partition, tout element de la partie gauche est
  *             inferieur ou egal a tout element de la partie droite.
  */
-static void rapide_rec(int *t, ptrdiff_t lo, ptrdiff_t hi)
-{
-    while (lo < hi) {
-        ptrdiff_t j = partition_hoare(t, lo, hi);
-        if (j - lo + 1 < hi - j) {          /* gauche plus petite */
-            rapide_rec(t, lo, j);
-            lo = j + 1;
-        } else {                            /* droite plus petite */
-            rapide_rec(t, j + 1, hi);
-            hi = j;
-        }
+static void rapide_rec(int *t, ptrdiff_t lo, ptrdiff_t hi) {
+  while (lo < hi) {
+    ptrdiff_t j = partition_hoare(t, lo, hi);
+    if (j - lo + 1 < hi - j) { /* gauche plus petite */
+      rapide_rec(t, lo, j);
+      lo = j + 1;
+    } else { /* droite plus petite */
+      rapide_rec(t, j + 1, hi);
+      hi = j;
     }
+  }
 }
 
 /*
  * tri_rapide : tri rapide, pivot median de trois, partition de Hoare.
  * Parametres : t le tableau, n sa taille.
  */
-void tri_rapide(int *t, size_t n)
-{
-    if (n < 2) {
-        return;
+void tri_rapide(int *t, size_t n) {
+  if (n < 2) {
+    return;
+  }
+  rapide_rec(t, 0, (ptrdiff_t)n - 1);
+}
+
+/* ------------------------------------------------------------------ */
+/* Tri par tas                                                         */
+/* ------------------------------------------------------------------ */
+
+/*
+ * tamiser : retablit la propriete de tas maximum pour le sous-arbre de
+ * racine r, dans le tas t[0..taille-1]. Les enfants de r sont 2r+1 et 2r+2.
+ * Invariant : a chaque tour, les sous-arbres sous t[r] sont des tas.
+ */
+static void tamiser(int *t, size_t r, size_t taille) {
+  while (2 * r + 1 < taille) {
+    size_t enfant = 2 * r + 1;
+    if (enfant + 1 < taille) {
+      INC_CMP();
+      if (t[enfant] < t[enfant + 1]) {
+        enfant++;
+      }
     }
-    rapide_rec(t, 0, (ptrdiff_t)n - 1);
+    INC_CMP();
+    if (t[r] >= t[enfant]) {
+      return;
+    }
+    echanger(&t[r], &t[enfant]);
+    r = enfant;
+  }
+}
+
+/*
+ * tri_tas : tri par tas, en place, tas maximum.
+ * Parametres : t le tableau, n sa taille.
+ * Construction du tas en O(n) (methode de Floyd), puis n-1 extractions.
+ * Invariant : apres k extractions, les k dernieres cases contiennent les
+ *             k plus grands elements, tries ; le reste est un tas.
+ */
+void tri_tas(int *t, size_t n) {
+  if (n < 2) {
+    return;
+  }
+  for (size_t i = n / 2; i > 0; i--) {
+    tamiser(t, i - 1, n);
+  }
+  for (size_t fin = n - 1; fin > 0; fin--) {
+    echanger(&t[0], &t[fin]);
+    tamiser(t, 0, fin);
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -300,11 +339,12 @@ void tri_rapide(int *t, size_t n)
 /* ------------------------------------------------------------------ */
 /* Ajouter un tri = ajouter une ligne dans cette table. */
 const AlgoTri ALGOS[] = {
-    { "selection", tri_selection, N_MAX_QUADRATIQUE },
-    { "insertion", tri_insertion, N_MAX_QUADRATIQUE },
-    { "bulles",    tri_bulles,    N_MAX_QUADRATIQUE },
-    { "fusion",    tri_fusion,    N_MAX_LINEARITHM },
-    { "rapide",    tri_rapide,    N_MAX_LINEARITHM },
+    {"selection", tri_selection, N_MAX_QUADRATIQUE},
+    {"insertion", tri_insertion, N_MAX_QUADRATIQUE},
+    {"bulles", tri_bulles, N_MAX_QUADRATIQUE},
+    {"fusion", tri_fusion, N_MAX_LINEARITHM},
+    {"rapide", tri_rapide, N_MAX_LINEARITHM},
+    {"tas", tri_tas, N_MAX_LINEARITHM},
 };
 
 const size_t NB_ALGOS = sizeof ALGOS / sizeof ALGOS[0];
