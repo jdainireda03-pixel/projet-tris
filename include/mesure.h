@@ -21,19 +21,19 @@ int64_t mes_maintenant_ns(void);
 int64_t mes_temps_tri(fonction_tri f, int *t, size_t n);
 
 /*
- * mes_oracle : fabrique le resultat attendu avec qsort.
- * Parametres : oracle (sortie, n entiers), entree (tableau d'origine, non
+ * mes_reference : fabrique le resultat attendu avec qsort.
+ * Parametres : reference (sortie, n entiers), entree (tableau d'origine, non
  * modifie), n (taille). Retour : aucun. A appeler avant le tri, hors de la zone
  * chronometree.
  */
-void mes_oracle(int *oracle, const int *entree, size_t n);
+void mes_reference(int *reference, const int *entree, size_t n);
 
 /*
- * mes_verifier : compare le resultat d'un tri a l'oracle, case par case.
- * Parametres : t (resultat du tri), oracle (resultat attendu), n (taille).
+ * mes_verifier : compare le resultat d'un tri a la reference, case par case.
+ * Parametres : t (resultat du tri), reference (resultat attendu), n (taille).
  * Retour : 0 si identiques ; sinon (indice de la premiere case fausse) + 1.
  */
-int mes_verifier(const int *t, const int *oracle, size_t n);
+int mes_verifier(const int *t, const int *reference, size_t n);
 
 /*
  * mes_mediane : mediane de k valeurs.

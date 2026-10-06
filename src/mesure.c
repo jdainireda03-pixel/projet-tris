@@ -56,26 +56,26 @@ int64_t mes_temps_tri(fonction_tri f, int *t, size_t n) {
 }
 
 /*
- * mes_oracle : fabrique le resultat attendu (copie triee par qsort).
- * Parametres : oracle (sortie, n entiers), entree (non modifiee), n (taille).
+ * mes_reference : fabrique le resultat attendu (copie triee par qsort).
+ * Parametres : reference (sortie, n entiers), entree (non modifiee), n (taille).
  */
-void mes_oracle(int *oracle, const int *entree, size_t n) {
+void mes_reference(int *reference, const int *entree, size_t n) {
   if (n == 0) {
     return;
   }
-  memcpy(oracle, entree, n * sizeof(int));
-  qsort(oracle, n, sizeof(int), cmp_int);
+  memcpy(reference, entree, n * sizeof(int));
+  qsort(reference, n, sizeof(int), cmp_int);
 }
 
 /*
- * mes_verifier : compare t a l'oracle case par case.
+ * mes_verifier : compare t a la reference case par case.
  * Une egalite totale prouve a la fois que t est trie et qu'il contient
  * les memes valeurs que l'entree.
  * Retour : 0 si identiques ; sinon (indice de la premiere case fausse) + 1.
  */
-int mes_verifier(const int *t, const int *oracle, size_t n) {
+int mes_verifier(const int *t, const int *reference, size_t n) {
   for (size_t i = 0; i < n; i++) {
-    if (t[i] != oracle[i]) {
+    if (t[i] != reference[i]) {
       return (int)(i + 1);
     }
   }
