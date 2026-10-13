@@ -14,8 +14,8 @@
 /* ------------------------------------------------------------------ */
 /* Constantes                                                          */
 /* ------------------------------------------------------------------ */
-#define N_MAX_QUADRATIQUE 32000UL  /* tailles max des tris en O(n^2)   */
-#define N_MAX_LINEARITHM 1024000UL /* tailles max des tris en O(n log n) */
+#define N_MAX_QUADRATIQUE 32000UL   /* tailles max des tris en O(n^2)   */
+#define N_MAX_LINEARITHM 10240000UL /* 10000 x 2^10 : tailles max O(n log n) */
 
 /* ------------------------------------------------------------------ */
 /* Compteurs (definis seulement si -DCOMPTAGE)                         */
