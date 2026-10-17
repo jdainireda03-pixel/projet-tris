@@ -23,4 +23,4 @@ typedef struct {
 
 extern const Jeu JEUX[];
 extern const size_t NB_JEUX;
-#endif // !
+#endif /* DONNEES_H */

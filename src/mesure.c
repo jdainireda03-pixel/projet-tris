@@ -85,7 +85,7 @@ int mes_verifier(const int *t, const int *reference, size_t n) {
 /*
  * mes_mediane : mediane de k valeurs (k > 0). Le tableau v est trie en place.
  * Retour : v[k/2]. Pour k = 11 c'est la 6e valeur, une vraie mesure.
- * Pour k pair, c'est la moyenne haute (pas de moyenne calculee).
+ * Pour k pair, c'est la valeur centrale superieure (sans moyenne).
  */
 int64_t mes_mediane(int64_t *v, size_t k) {
   qsort(v, k, sizeof(int64_t), cmp_int64);

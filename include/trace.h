@@ -9,8 +9,8 @@
 
 /* Un point (taille du tableau, temps de tri en nanosecondes). */
 typedef struct {
-    double x;
-    double y;
+  double x;
+  double y;
 } Point;
 
 FILE *gp_ouvrir(void);
@@ -21,13 +21,13 @@ FILE *gp_ouvrir(void);
 void gp_tracer_jeu(FILE *gp, const char *titre, const char *png,
                    Point courbes[NB_TRIS_PAR_GRAPHE][NB_TAILLES],
                    const char *noms_tris[NB_TRIS_PAR_GRAPHE],
-                   const int nb_pts[NB_TRIS_PAR_GRAPHE],
-                   int nb_tris, int loglog, double xmin, double xmax);
+                   const int nb_pts[NB_TRIS_PAR_GRAPHE], int nb_tris,
+                   int loglog, double xmin, double xmax);
 /* Compatibilite : trace avec un seul nb_tailles commun, echelle lineaire. */
 void gp_tracer_n_tris(FILE *gp, const char *titre, const char *png,
                       Point courbes[NB_TRIS_PAR_GRAPHE][NB_TAILLES],
-                      const char *noms_tris[NB_TRIS_PAR_GRAPHE],
-                      int nb_tris, int nb_tailles);
+                      const char *noms_tris[NB_TRIS_PAR_GRAPHE], int nb_tris,
+                      int nb_tailles);
 int gp_fermer(FILE *gp);
 
-#endif
+#endif /* TRACE_H */

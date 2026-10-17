@@ -38,7 +38,8 @@ int mes_verifier(const int *t, const int *reference, size_t n);
 /*
  * mes_mediane : mediane de k valeurs.
  * Parametres : v (valeurs, TRIEES EN PLACE par la fonction), k (nombre de
- * valeurs, > 0). Retour : la valeur du milieu (la 6e pour k = 11).
+ * valeurs, > 0). Retour : v[k/2] (la 6e valeur pour k = 11), soit
+ * la valeur centrale superieure pour k pair.
  */
 int64_t mes_mediane(int64_t *v, size_t k);
 
